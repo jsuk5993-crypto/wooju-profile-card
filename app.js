@@ -281,6 +281,8 @@ function showIOSSaveOverlay(dataUrl){
 }
 
 
+let exportFontCSSCache=null;
+
 async function buildGoogleFontEmbedCSS(){
   if(exportFontCSSCache) return exportFontCSSCache;
   const links=[...document.querySelectorAll('link[rel="stylesheet"][href*="fonts.googleapis.com"]')]
