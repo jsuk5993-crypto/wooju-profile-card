@@ -22,6 +22,65 @@ function apiUrl(path){
 }
 
 let state={tags:['즐겜','디코가능','일반','친목','솔랭'],uploadedCharacter:null,championVersion:fallback.version,champions:[]};
+
+// Large AI/uploaded background images are stored in IndexedDB instead of localStorage.
+// This keeps the generated background after refresh/revisit without hitting localStorage quota limits.
+const BG_DB_NAME='wooju-card-assets';
+const BG_DB_VERSION=1;
+const BG_STORE='backgrounds';
+const BG_KEY='current-background';
+function openBgDB(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(BG_DB_NAME,BG_DB_VERSION);
+    req.onupgradeneeded=()=>{
+      const db=req.result;
+      if(!db.objectStoreNames.contains(BG_STORE)) db.createObjectStore(BG_STORE,{keyPath:'id'});
+    };
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+}
+async function saveBackgroundImage(dataUrl, source='ai'){
+  if(!dataUrl) return;
+  try{
+    const db=await openBgDB();
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(BG_STORE,'readwrite');
+      tx.objectStore(BG_STORE).put({id:BG_KEY,dataUrl,source,updatedAt:Date.now()});
+      tx.oncomplete=resolve;
+      tx.onerror=()=>reject(tx.error);
+      tx.onabort=()=>reject(tx.error);
+    });
+    db.close();
+  }catch(e){ console.warn('Background persistence failed:',e); }
+}
+async function loadBackgroundImage(){
+  try{
+    const db=await openBgDB();
+    const value=await new Promise((resolve,reject)=>{
+      const tx=db.transaction(BG_STORE,'readonly');
+      const req=tx.objectStore(BG_STORE).get(BG_KEY);
+      req.onsuccess=()=>resolve(req.result||null);
+      req.onerror=()=>reject(req.error);
+    });
+    db.close();
+    return value?.dataUrl||null;
+  }catch(e){ console.warn('Background restore failed:',e); return null; }
+}
+async function clearBackgroundImage(){
+  try{
+    const db=await openBgDB();
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(BG_STORE,'readwrite');
+      tx.objectStore(BG_STORE).delete(BG_KEY);
+      tx.oncomplete=resolve;
+      tx.onerror=()=>reject(tx.error);
+      tx.onabort=()=>reject(tx.error);
+    });
+    db.close();
+  }catch(e){ console.warn('Background clear failed:',e); }
+}
+
 function fill(select,items,selected){select.innerHTML='';items.forEach(i=>{const o=document.createElement('option');o.value=i.value||i.id;o.textContent=i.label||i.name||i.value;if(o.value===selected)o.selected=true;select.appendChild(o)})}
 function champ(id){return state.champions.find(c=>c.id===id)||fallback.list.find(c=>c.id===id)||fallback.list[0]}
 function champIcon(id){return `https://ddragon.leagueoflegends.com/cdn/${state.championVersion}/img/champion/${id}.png`}
@@ -100,6 +159,7 @@ async function generateAI(){
     }
     state.uploadedCharacter=j.imageUrl || (j.imageBase64 ? `data:${j.mimeType||'image/png'};base64,${j.imageBase64}` : null);
     if(!state.uploadedCharacter) throw new Error('이미지 데이터가 없습니다.');
+    await saveBackgroundImage(state.uploadedCharacter,'ai');
     update();
     s.className='helper is-ok';
     s.textContent='공식 챔피언 레퍼런스 기반 AI 배경을 적용했습니다.';
@@ -186,10 +246,10 @@ function setup(){
   els.tagInput.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===','){e.preventDefault();addTag(els.tagInput.value);els.tagInput.value=''}});
   document.querySelectorAll('.quick-tags button').forEach(b=>b.onclick=()=>addTag(b.dataset.tag));
   els.clearTags.onclick=()=>{state.tags=[];renderTags();update()};
-  els.characterUpload.onchange=e=>{const f=e.target.files?.[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{state.uploadedCharacter=rd.result;update()};rd.readAsDataURL(f)};
-  els.clearCharacterBtn.onclick=()=>{state.uploadedCharacter=null;els.characterUpload.value='';update()};
+  els.characterUpload.onchange=e=>{const f=e.target.files?.[0];if(!f)return;const rd=new FileReader();rd.onload=async()=>{state.uploadedCharacter=rd.result;await saveBackgroundImage(state.uploadedCharacter,'upload');update()};rd.readAsDataURL(f)};
+  els.clearCharacterBtn.onclick=async()=>{state.uploadedCharacter=null;els.characterUpload.value='';await clearBackgroundImage();update()};
   els.aiGenerateBtn.onclick=generateAI;
-  els.resetBtn.onclick=()=>{localStorage.removeItem('wooju-card-v7');location.reload()};
+  els.resetBtn.onclick=async()=>{localStorage.removeItem('wooju-card-v7');await clearBackgroundImage();location.reload()};
   els.downloadBtn.onclick=exportCardPNG;
 
   // Ensure external Riot images are requested in CORS-safe mode for export.
@@ -199,4 +259,4 @@ function setup(){
   window.addEventListener('resize',scaleCard);
 }
 async function loadChamps(){try{const vr=await fetch('https://ddragon.leagueoflegends.com/api/versions.json'),vs=await vr.json();state.championVersion=vs[0]||fallback.version;const cr=await fetch(`https://ddragon.leagueoflegends.com/cdn/${state.championVersion}/data/ko_KR/champion.json`),p=await cr.json();state.champions=Object.values(p.data).map(c=>({id:c.id,name:c.name,title:c.title||'',blurb:c.blurb||'',tags:c.tags||[],partype:c.partype||''})).sort((a,b)=>a.name.localeCompare(b.name,'ko'))}catch{state.champions=fallback.list;state.championVersion=fallback.version}const items=state.champions.map(c=>({value:c.id,label:c.name,id:c.id,name:c.name}));fill(els.most1,items,'Nilah');fill(els.most2,items,'Caitlyn');fill(els.most3,items,'Velkoz')}
-async function init(){fill(els.mainRole,roleOptions,'ADC');fill(els.subRole,roleOptions,'MID');fill(els.tier,tierOptions,'MASTER');await loadChamps();apply(load());setup();update();scaleCard()} init();
+async function init(){fill(els.mainRole,roleOptions,'ADC');fill(els.subRole,roleOptions,'MID');fill(els.tier,tierOptions,'MASTER');await loadChamps();apply(load());state.uploadedCharacter=await loadBackgroundImage();setup();update();scaleCard()} init();
