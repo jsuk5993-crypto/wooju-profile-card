@@ -88,11 +88,12 @@
 
 /* ===== v21 nickname + tag single-line identity polish ===== */
 .identity{
-  width:880px;
+  width:620px;
+  max-width:620px;
   display:grid;
   grid-template-columns:max-content max-content;
   grid-template-rows:auto auto auto;
-  column-gap:18px;
+  column-gap:14px;
   align-items:end;
 }
 .identity h3{
@@ -103,7 +104,7 @@
   max-width:none;
   overflow:visible;
   font-family:"Jua","Noto Sans KR",sans-serif;
-  font-size:88px;
+  font-size:84px;
   line-height:.96;
   letter-spacing:-.025em;
   font-weight:400;
@@ -116,7 +117,7 @@
   margin:0 0 7px 0;
   white-space:nowrap;
   font-family:"Jua","Noto Sans KR",sans-serif;
-  font-size:30px;
+  font-size:28px;
   line-height:1;
   letter-spacing:-.02em;
   font-weight:400;

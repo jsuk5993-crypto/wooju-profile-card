@@ -93,16 +93,18 @@ function apply(d){if(!d)return;['nickname','serverTag','birth','introText'].forE
 function renderTags(){els.tagInputWrap.querySelectorAll('.tag-pill').forEach(e=>e.remove());state.tags.forEach((t,i)=>{const s=document.createElement('span');s.className='tag-pill';s.innerHTML=`#${t}<button type="button">×</button>`;s.querySelector('button').onclick=()=>{state.tags.splice(i,1);renderTags();update()};els.tagInputWrap.insertBefore(s,els.tagInput)});els.cardTags.innerHTML='';state.tags.slice(0,5).forEach(t=>{const s=document.createElement('span');s.textContent=`#${t}`;els.cardTags.appendChild(s)})}
 function addTag(v){const t=v.replace(/^#/,'').trim();if(!t||state.tags.includes(t)||state.tags.length>=8)return;state.tags.push(t);renderTags();update()}
 function fitIdentityLine(){
-  // Nickname + card tag are always kept on one line.
-  // Start large, then shrink only as much as needed for long names/tags.
+  // Keep nickname + tag on one line, but fit them into a conservative safe text area.
+  // Some iPhones render Jua slightly wider, so we use a smaller visual width target
+  // than the full identity box to prevent overlaps like "닉네임#KR1".
   const box=els.cardNickname.closest('.identity');
   if(!box) return;
-  const maxWidth=box.clientWidth || 880;
-  const gap=18;
+
+  const safeMaxWidth=Math.min(box.clientWidth || 620, 560);
+  const gap=14;
   let nickSize=88;
   let tagSize=30;
-  const minNickSize=40;
-  const minTagSize=18;
+  const minNickSize=32;
+  const minTagSize=14;
 
   const applySize=()=>{
     els.cardNickname.style.fontSize=`${nickSize}px`;
@@ -110,12 +112,19 @@ function fitIdentityLine(){
   };
 
   applySize();
-  for(let i=0;i<30;i++){
+  for(let i=0;i<70;i++){
     const total=els.cardNickname.scrollWidth + els.cardTag.scrollWidth + gap;
-    if(total<=maxWidth) break;
+    if(total<=safeMaxWidth) break;
     if(nickSize<=minNickSize && tagSize<=minTagSize) break;
-    nickSize=Math.max(minNickSize,nickSize-2);
+    nickSize=Math.max(minNickSize,nickSize-1);
     tagSize=Math.max(minTagSize,Math.round(nickSize*0.34));
+    applySize();
+  }
+
+  // If the combination is still too long on narrow Safari rendering, trim only a bit more.
+  while((els.cardNickname.scrollWidth + els.cardTag.scrollWidth + gap) > safeMaxWidth && nickSize > minNickSize){
+    nickSize=Math.max(minNickSize,nickSize-1);
+    tagSize=Math.max(minTagSize,Math.round(nickSize*0.33));
     applySize();
   }
 }
@@ -271,6 +280,34 @@ function showIOSSaveOverlay(dataUrl){
   document.body.appendChild(overlay);
 }
 
+
+async function prepareExportFonts(){
+  // html-to-image creates an SVG clone. Web fonts that are visible in the live DOM
+  // must be embedded into that clone or the browser may fall back to a system font.
+  if(document.fonts?.load){
+    await Promise.allSettled([
+      document.fonts.load('400 88px "Jua"', 'MU지개반사 #KR1 가나다 ABC 123'),
+      document.fonts.load('400 37px "Jua"', '같이 재밌게 게임해요 1997년생'),
+      document.fonts.load('700 53px "Rajdhani"', 'CHALLENGER GRANDMASTER MASTER GOLD ADC MID SUPPORT'),
+      document.fonts.load('700 30px "Noto Sans KR"', '모스트 챔피언 솔로랭크 자유랭크')
+    ]);
+  }
+  if(document.fonts?.ready) await document.fonts.ready;
+
+  if(!window.htmlToImage?.getFontEmbedCSS) return undefined;
+
+  try{
+    // Reuse one fully embedded @font-face sheet for the actual PNG render.
+    // preferredFontFormat keeps the embedded payload smaller and more reliable.
+    return await window.htmlToImage.getFontEmbedCSS(els.card,{
+      preferredFontFormat:'woff2'
+    });
+  }catch(err){
+    console.warn('Font embedding failed; falling back to browser fonts:',err);
+    return undefined;
+  }
+}
+
 async function exportCardPNG(){
   const b=els.downloadBtn;
   const oldText=b.textContent;
@@ -278,7 +315,7 @@ async function exportCardPNG(){
   b.textContent='PNG 만드는 중...';
 
   try{
-    if(document.fonts?.ready) await document.fonts.ready;
+    const fontEmbedCSS=await prepareExportFonts();
     fitTierText();
     await waitForCardImages(els.card);
 
@@ -296,6 +333,8 @@ async function exportCardPNG(){
       cacheBust:true,
       includeQueryParams:true,
       skipAutoScale:true,
+      preferredFontFormat:'woff2',
+      ...(fontEmbedCSS?{fontEmbedCSS}:{}),
       style:{
         transform:'none',
         transformOrigin:'0 0',
