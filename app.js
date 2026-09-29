@@ -28,7 +28,7 @@ function champIcon(id){return `https://ddragon.leagueoflegends.com/cdn/${state.c
 function splash(id){return `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${id}_0.jpg`}
 function roleAsset(v){return roleOptions.find(r=>r.value===v)?.asset||roleOptions[0].asset} function tierAsset(v){return tierOptions.find(t=>t.value===v)?.asset||tierOptions[0].asset}
 function collect(){return{nickname:els.nickname.value.trim()||'이 궤',serverTag:els.serverTag.value.trim()||'#에이엑',birth:els.birth.value.trim()||'2000',gender:els.gender.value,introText:els.introText.value.trim()||'같이 재밌게 게임해요',mainRole:els.mainRole.value,subRole:els.subRole.value,tier:els.tier.value,most1:els.most1.value,most2:els.most2.value,most3:els.most3.value,tags:state.tags,uploadedCharacter:state.uploadedCharacter}}
-function save(){localStorage.setItem('wooju-card-v7',JSON.stringify(collect()))} function load(){try{return JSON.parse(localStorage.getItem('wooju-card-v7'))}catch{return null}}
+function save(){try{const d=collect();d.uploadedCharacter=null;localStorage.setItem('wooju-card-v7',JSON.stringify(d))}catch(e){console.warn('Profile save skipped:',e)}} function load(){try{return JSON.parse(localStorage.getItem('wooju-card-v7'))}catch{return null}}
 function apply(d){if(!d)return;['nickname','serverTag','birth','introText'].forEach(k=>{if(d[k])els[k].value=d[k]});if(d.gender)els.gender.value=d.gender;if(d.mainRole)els.mainRole.value=d.mainRole;if(d.subRole)els.subRole.value=d.subRole;if(d.tier)els.tier.value=d.tier;if(d.most1)els.most1.value=d.most1;if(d.most2)els.most2.value=d.most2;if(d.most3)els.most3.value=d.most3;if(Array.isArray(d.tags))state.tags=d.tags;if(d.uploadedCharacter)state.uploadedCharacter=d.uploadedCharacter}
 function renderTags(){els.tagInputWrap.querySelectorAll('.tag-pill').forEach(e=>e.remove());state.tags.forEach((t,i)=>{const s=document.createElement('span');s.className='tag-pill';s.innerHTML=`#${t}<button type="button">×</button>`;s.querySelector('button').onclick=()=>{state.tags.splice(i,1);renderTags();update()};els.tagInputWrap.insertBefore(s,els.tagInput)});els.cardTags.innerHTML='';state.tags.slice(0,5).forEach(t=>{const s=document.createElement('span');s.textContent=`#${t}`;els.cardTags.appendChild(s)})}
 function addTag(v){const t=v.replace(/^#/,'').trim();if(!t||state.tags.includes(t)||state.tags.length>=8)return;state.tags.push(t);renderTags();update()}
@@ -112,6 +112,98 @@ async function generateAI(){
     b.textContent='AI 배경 생성';
   }
 }
-function setup(){[els.nickname,els.serverTag,els.birth,els.gender,els.introText,els.mainRole,els.subRole,els.tier,els.most1,els.most2,els.most3].forEach(e=>{e.addEventListener('input',update);e.addEventListener('change',update)});els.tagInput.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===','){e.preventDefault();addTag(els.tagInput.value);els.tagInput.value=''}});document.querySelectorAll('.quick-tags button').forEach(b=>b.onclick=()=>addTag(b.dataset.tag));els.clearTags.onclick=()=>{state.tags=[];renderTags();update()};els.characterUpload.onchange=e=>{const f=e.target.files?.[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{state.uploadedCharacter=rd.result;update()};rd.readAsDataURL(f)};els.clearCharacterBtn.onclick=()=>{state.uploadedCharacter=null;els.characterUpload.value='';update()};els.aiGenerateBtn.onclick=generateAI;els.resetBtn.onclick=()=>{localStorage.removeItem('wooju-card-v7');location.reload()};els.downloadBtn.onclick=async()=>{const old=els.card.style.transform;els.card.style.transform='none';const cv=await html2canvas(els.card,{scale:1,backgroundColor:null,useCORS:true,width:1080,height:1080});els.card.style.transform=old;const a=document.createElement('a');a.href=cv.toDataURL('image/png');a.download=`${(els.nickname.value||'wooju').replace(/\s+/g,'_')}_WOOJU.png`;a.click()};new ResizeObserver(scaleCard).observe(els.viewport);window.addEventListener('resize',scaleCard)}
+function waitForCardImages(root){
+  const imgs=[...root.querySelectorAll('img')];
+  return Promise.all(imgs.map(img=>{
+    if(img.complete && img.naturalWidth>0) return Promise.resolve();
+    return new Promise(resolve=>{
+      const done=()=>resolve();
+      img.addEventListener('load',done,{once:true});
+      img.addEventListener('error',done,{once:true});
+      setTimeout(done,15000);
+    });
+  }));
+}
+
+async function exportCardPNG(){
+  const b=els.downloadBtn;
+  const oldText=b.textContent;
+  b.disabled=true;
+  b.textContent='PNG 만드는 중...';
+  try{
+    if(document.fonts?.ready) await document.fonts.ready;
+    await waitForCardImages(els.card);
+
+    // IMPORTANT: never resize the live preview. Only the cloned DOM used by
+    // html2canvas is reset to its native 1080x1080 export size.
+    const cv=await html2canvas(els.card,{
+      scale:1,
+      backgroundColor:'#07101e',
+      useCORS:true,
+      allowTaint:false,
+      logging:false,
+      imageTimeout:20000,
+      width:1080,
+      height:1080,
+      windowWidth:1080,
+      windowHeight:1080,
+      onclone:(doc)=>{
+        const card=doc.getElementById('profileCard');
+        if(card){
+          card.style.transform='none';
+          card.style.transformOrigin='0 0';
+          card.style.left='0';
+          card.style.top='0';
+          card.style.width='1080px';
+          card.style.height='1080px';
+        }
+        const viewport=doc.getElementById('cardViewport');
+        if(viewport){
+          viewport.style.width='1080px';
+          viewport.style.height='1080px';
+          viewport.style.overflow='visible';
+        }
+      }
+    });
+
+    const blob=await new Promise((resolve,reject)=>{
+      cv.toBlob(v=>v?resolve(v):reject(new Error('PNG 변환에 실패했습니다.')),'image/png');
+    });
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=`${(els.nickname.value||'wooju').replace(/\s+/g,'_')}_WOOJU.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }catch(err){
+    console.error('PNG export failed:',err);
+    alert(`PNG 저장 실패: ${err?.message||'알 수 없는 오류'}\n\n새로고침하지 말고 이 문구를 알려주세요.`);
+  }finally{
+    b.disabled=false;
+    b.textContent=oldText;
+    // Live preview is never modified, but re-apply its correct scale just in case.
+    scaleCard();
+  }
+}
+
+function setup(){
+  [els.nickname,els.serverTag,els.birth,els.gender,els.introText,els.mainRole,els.subRole,els.tier,els.most1,els.most2,els.most3].forEach(e=>{e.addEventListener('input',update);e.addEventListener('change',update)});
+  els.tagInput.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===','){e.preventDefault();addTag(els.tagInput.value);els.tagInput.value=''}});
+  document.querySelectorAll('.quick-tags button').forEach(b=>b.onclick=()=>addTag(b.dataset.tag));
+  els.clearTags.onclick=()=>{state.tags=[];renderTags();update()};
+  els.characterUpload.onchange=e=>{const f=e.target.files?.[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{state.uploadedCharacter=rd.result;update()};rd.readAsDataURL(f)};
+  els.clearCharacterBtn.onclick=()=>{state.uploadedCharacter=null;els.characterUpload.value='';update()};
+  els.aiGenerateBtn.onclick=generateAI;
+  els.resetBtn.onclick=()=>{localStorage.removeItem('wooju-card-v7');location.reload()};
+  els.downloadBtn.onclick=exportCardPNG;
+
+  // Ensure external Riot images are requested in CORS-safe mode for export.
+  [els.characterImage,els.profileIcon,els.most1Icon,els.most2Icon,els.most3Icon].forEach(img=>{img.crossOrigin='anonymous'});
+
+  new ResizeObserver(scaleCard).observe(els.viewport);
+  window.addEventListener('resize',scaleCard);
+}
 async function loadChamps(){try{const vr=await fetch('https://ddragon.leagueoflegends.com/api/versions.json'),vs=await vr.json();state.championVersion=vs[0]||fallback.version;const cr=await fetch(`https://ddragon.leagueoflegends.com/cdn/${state.championVersion}/data/ko_KR/champion.json`),p=await cr.json();state.champions=Object.values(p.data).map(c=>({id:c.id,name:c.name,title:c.title||'',blurb:c.blurb||'',tags:c.tags||[],partype:c.partype||''})).sort((a,b)=>a.name.localeCompare(b.name,'ko'))}catch{state.champions=fallback.list;state.championVersion=fallback.version}const items=state.champions.map(c=>({value:c.id,label:c.name,id:c.id,name:c.name}));fill(els.most1,items,'Nilah');fill(els.most2,items,'Caitlyn');fill(els.most3,items,'Velkoz')}
 async function init(){fill(els.mainRole,roleOptions,'ADC');fill(els.subRole,roleOptions,'MID');fill(els.tier,tierOptions,'MASTER');await loadChamps();apply(load());setup();update();scaleCard()} init();
