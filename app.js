@@ -281,31 +281,65 @@ function showIOSSaveOverlay(dataUrl){
 }
 
 
+async function buildGoogleFontEmbedCSS(){
+  if(exportFontCSSCache) return exportFontCSSCache;
+  const links=[...document.querySelectorAll('link[rel="stylesheet"][href*="fonts.googleapis.com"]')]
+    .map(l=>l.href)
+    .filter(Boolean);
+  if(!links.length) return '';
+
+  const cssParts=[];
+  for(const href of links){
+    try{
+      const res=await fetch(href,{mode:'cors',cache:'force-cache'});
+      let css=await res.text();
+      const urls=[...css.matchAll(/url\(([^)]+)\)/g)].map(m=>m[1].replace(/["']/g,'').trim());
+      for(const url of urls){
+        try{
+          const fres=await fetch(url,{mode:'cors',cache:'force-cache'});
+          const blob=await fres.blob();
+          const dataUrl=await new Promise((resolve,reject)=>{
+            const fr=new FileReader();
+            fr.onload=()=>resolve(fr.result);
+            fr.onerror=reject;
+            fr.readAsDataURL(blob);
+          });
+          css=css.split(url).join(dataUrl);
+        }catch(fontErr){
+          console.warn('Font file embed failed:',url,fontErr);
+        }
+      }
+      cssParts.push(css);
+    }catch(err){
+      console.warn('Google font stylesheet fetch failed:',href,err);
+    }
+  }
+  exportFontCSSCache=cssParts.join(String.fromCharCode(10));
+  return exportFontCSSCache;
+}
+
 async function prepareExportFonts(){
-  // html-to-image creates an SVG clone. Web fonts that are visible in the live DOM
-  // must be embedded into that clone or the browser may fall back to a system font.
   if(document.fonts?.load){
     await Promise.allSettled([
       document.fonts.load('400 88px "Jua"', 'MU지개반사 #KR1 가나다 ABC 123'),
-      document.fonts.load('400 37px "Jua"', '같이 재밌게 게임해요 1997년생'),
-      document.fonts.load('700 53px "Rajdhani"', 'CHALLENGER GRANDMASTER MASTER GOLD ADC MID SUPPORT'),
-      document.fonts.load('700 30px "Noto Sans KR"', '모스트 챔피언 솔로랭크 자유랭크')
+      document.fonts.load('400 37px "Jua"', '같이 재밌게 게임해요 1997년생 자랭 환영'),
+      document.fonts.load('700 53px "Rajdhani"', 'CHALLENGER GRANDMASTER MASTER GOLD ADC MID SUPPORT WOOJU'),
+      document.fonts.load('700 30px "Noto Sans KR"', '모스트 챔피언 솔로랭크 자유랭크 출겜 디코가능 일반 친목 솔랭')
     ]);
   }
   if(document.fonts?.ready) await document.fonts.ready;
 
-  if(!window.htmlToImage?.getFontEmbedCSS) return undefined;
+  const googleCSS=await buildGoogleFontEmbedCSS();
+  if(googleCSS) return googleCSS;
 
-  try{
-    // Reuse one fully embedded @font-face sheet for the actual PNG render.
-    // preferredFontFormat keeps the embedded payload smaller and more reliable.
-    return await window.htmlToImage.getFontEmbedCSS(els.card,{
-      preferredFontFormat:'woff2'
-    });
-  }catch(err){
-    console.warn('Font embedding failed; falling back to browser fonts:',err);
-    return undefined;
+  if(window.htmlToImage?.getFontEmbedCSS){
+    try{
+      return await window.htmlToImage.getFontEmbedCSS(document.documentElement);
+    }catch(err){
+      console.warn('Font embedding fallback failed:',err);
+    }
   }
+  return undefined;
 }
 
 async function exportCardPNG(){
