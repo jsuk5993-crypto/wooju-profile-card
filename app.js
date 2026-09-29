@@ -15,7 +15,7 @@ const tierTheme={IRON:['#7b6d73','#b6a8ae','#3b3337'],BRONZE:['#a66a43','#d29a73
 const fallback={version:'14.24.1',list:[{id:'Nilah',name:'닐라'},{id:'Caitlyn',name:'케이틀린'},{id:'Velkoz',name:'벨코즈'},{id:'Samira',name:'사미라'},{id:'Kaisa',name:'카이사'},{id:'Jinx',name:'징크스'},{id:'Ahri',name:'아리'}]};
 const $=id=>document.getElementById(id); const els={nickname:$('nickname'),serverTag:$('serverTag'),birth:$('birth'),gender:$('gender'),introText:$('introText'),introCount:$('introCount'),mainRole:$('mainRole'),subRole:$('subRole'),tier:$('tier'),most1:$('most1'),most2:$('most2'),most3:$('most3'),tagInput:$('tagInput'),tagInputWrap:$('tagInputWrap'),clearTags:$('clearTags'),characterUpload:$('characterUpload'),clearCharacterBtn:$('clearCharacterBtn'),aiGenerateBtn:$('aiGenerateBtn'),aiStatus:$('aiStatus'),downloadBtn:$('downloadBtn'),resetBtn:$('resetBtn'),card:$('profileCard'),viewport:$('cardViewport'),characterImage:$('characterImage'),profileIcon:$('profileIcon'),cardNickname:$('cardNickname'),cardTag:$('cardTag'),cardBirth:$('cardBirth'),cardGender:$('cardGender'),cardIntro:$('cardIntro'),mainRoleIcon:$('mainRoleIcon'),subRoleIcon:$('subRoleIcon'),mainRoleText:$('mainRoleText'),subRoleText:$('subRoleText'),tierIcon:$('tierIcon'),tierText:$('tierText'),most1Icon:$('most1Icon'),most2Icon:$('most2Icon'),most3Icon:$('most3Icon'),most1Name:$('most1Name'),most2Name:$('most2Name'),most3Name:$('most3Name'),cardTags:$('cardTags')};
 
-const apiBase = (window.WOOJU_CONFIG?.apiBaseUrl || '').replace(/\/$/, '');
+const apiBase = (window.WOOJU_CONFIG?.apiBaseUrl || 'https://wooju-ai.onrender.com').replace(/\/$/, '');
 function apiUrl(path){
   if (apiBase) return `${apiBase}${path}`;
   return path;
