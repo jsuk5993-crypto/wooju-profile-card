@@ -130,60 +130,53 @@ async function exportCardPNG(){
   const oldText=b.textContent;
   b.disabled=true;
   b.textContent='PNG 만드는 중...';
+
   try{
     if(document.fonts?.ready) await document.fonts.ready;
     await waitForCardImages(els.card);
 
-    // IMPORTANT: never resize the live preview. Only the cloned DOM used by
-    // html2canvas is reset to its native 1080x1080 export size.
-    const cv=await html2canvas(els.card,{
-      scale:1,
-      backgroundColor:'#07101e',
-      useCORS:true,
-      allowTaint:false,
-      logging:false,
-      imageTimeout:20000,
+    if(!window.htmlToImage?.toPng){
+      throw new Error('PNG 저장 라이브러리를 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해주세요.');
+    }
+
+    // html2canvas는 이 카드의 clip-path / 복잡한 프레임을 정확히 그리지 못해
+    // 보라색 오버레이와 네모난 코너가 생겼다.
+    // html-to-image는 브라우저의 SVG foreignObject 렌더링을 사용해서
+    // 화면에서 보이는 CSS를 훨씬 그대로 보존한다.
+    const dataUrl=await window.htmlToImage.toPng(els.card,{
       width:1080,
       height:1080,
-      windowWidth:1080,
-      windowHeight:1080,
-      onclone:(doc)=>{
-        const card=doc.getElementById('profileCard');
-        if(card){
-          card.style.transform='none';
-          card.style.transformOrigin='0 0';
-          card.style.left='0';
-          card.style.top='0';
-          card.style.width='1080px';
-          card.style.height='1080px';
-        }
-        const viewport=doc.getElementById('cardViewport');
-        if(viewport){
-          viewport.style.width='1080px';
-          viewport.style.height='1080px';
-          viewport.style.overflow='visible';
-        }
+      canvasWidth:1080,
+      canvasHeight:1080,
+      pixelRatio:1,
+      backgroundColor:'#07101e',
+      cacheBust:true,
+      includeQueryParams:true,
+      skipAutoScale:true,
+      style:{
+        transform:'none',
+        transformOrigin:'0 0',
+        left:'0px',
+        top:'0px',
+        width:'1080px',
+        height:'1080px',
+        margin:'0'
       }
     });
 
-    const blob=await new Promise((resolve,reject)=>{
-      cv.toBlob(v=>v?resolve(v):reject(new Error('PNG 변환에 실패했습니다.')),'image/png');
-    });
-    const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url;
+    a.href=dataUrl;
     a.download=`${(els.nickname.value||'wooju').replace(/\s+/g,'_')}_WOOJU.png`;
     document.body.appendChild(a);
     a.click();
     a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),1500);
   }catch(err){
     console.error('PNG export failed:',err);
     alert(`PNG 저장 실패: ${err?.message||'알 수 없는 오류'}\n\n새로고침하지 말고 이 문구를 알려주세요.`);
   }finally{
     b.disabled=false;
     b.textContent=oldText;
-    // Live preview is never modified, but re-apply its correct scale just in case.
+    // 실제 미리보기 DOM은 전혀 수정하지 않는다.
     scaleCard();
   }
 }

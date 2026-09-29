@@ -1,14 +1,17 @@
-# WOOJU Profile Card v18 - PNG export fix
+# WOOJU Profile Card v19
 
-AI 생성/카드 디자인은 v17 그대로 유지하고 PNG 저장만 수정했습니다.
+PNG 저장 방식을 `html2canvas`에서 `html-to-image`로 교체했습니다.
 
-수정 내용:
-- 라이브 카드의 transform을 해제하지 않음 (저장 시 화면 확대/잘림 제거)
-- html2canvas가 복제한 카드만 1080x1080 원본 크기로 렌더
-- 저장 전에 폰트/이미지 로딩 대기
-- Riot 외부 이미지 CORS 모드 설정
-- html2canvas 1.4.1과 충돌할 수 있는 color-mix() 제거
-- 오류가 나도 미리보기 크기가 반드시 정상 유지
-- 대용량 AI base64 이미지를 localStorage에 저장하지 않아 QuotaExceeded 오류 방지
+## 이유
+기존 html2canvas가 카드의 `clip-path`와 복잡한 프레임 CSS를 정확히 렌더링하지 못해
+저장 PNG에 보라색 반투명 면과 네모난 코너가 생겼습니다.
 
-GitHub에서 루트의 app.js와 styles.css 두 파일만 교체하면 됩니다. Render/server 파일은 수정하지 않습니다.
+## 교체할 파일
+GitHub 루트에서 아래 두 파일만 교체하면 됩니다.
+
+- `index.html`
+- `app.js`
+
+`styles.css`, `config.js`, `server/`는 건드리지 않아도 됩니다.
+
+저장 시 실제 미리보기 DOM은 건드리지 않고, 1080×1080 PNG만 별도로 렌더링합니다.
