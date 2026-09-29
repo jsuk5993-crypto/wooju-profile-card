@@ -1,61 +1,42 @@
-# Member Profile Card v13
+# WOOJU Profile Card v17 — dual reference AI background
 
-이 버전은 **GitHub Pages + Render 서버** 조합으로
-`모스트 1 선택 -> AI 배경 생성 -> 카드 배경 자동 교체`가 되도록 정리한 버전입니다.
+이 버전부터 AI 배경은 텍스트만으로 생성하지 않습니다.
 
-## 구성
-- **GitHub Pages**: 카드 웹사이트 정적 파일 호스팅
-- **Render**: `/api/generate-character` 서버 실행, OpenAI 이미지 생성 호출
+1. 사용자가 **모스트1** 챔피언을 선택합니다.
+2. Render 서버가 Riot Data Dragon에서 해당 챔피언의 **공식 기본 Splash 이미지**를 자동으로 가져옵니다.
+3. `server/style-reference.png`를 **퀄리티/구도 레퍼런스**로 함께 전달합니다. 이 파일은 사용자가 승인한 오른쪽 예시 이미지에서 UI를 제거하고 핵심 아트 부분만 잘라 둔 이미지입니다.
+4. OpenAI `gpt-image-2.5-sunburst`의 **Images Edit API**에 두 이미지를 함께 넣습니다.
+5. 생성 결과의 배경 이미지만 기존 카드에 자동 삽입됩니다.
 
-## 핵심 파일
-- `index.html`, `styles.css`, `app.js` : 카드 프론트엔드
-- `config.js` : Render 서버 주소 입력
-- `server/server.js` : OpenAI 이미지 API 연결 서버
-- `server/.env.example` : 환경변수 예시
-- `server/render.yaml` : Render 배포 참고 파일
+## 두 레퍼런스의 역할
+- 입력 이미지 1: 공식 챔피언 Splash — 챔피언 정체성 전용
+- 입력 이미지 2: style-reference.png — 렌더링 퀄리티/광원/구도/역동성 전용
 
-## 1) GitHub Pages용 설정
-GitHub Pages에 올리기 전에 `config.js`를 열어서 아래처럼 Render 주소를 넣으세요.
+프롬프트와 서버 양쪽에서 이미지 2의 닐라 외형/물 이펙트/색상을 다른 챔피언에게 복사하지 말도록 강하게 제한했습니다.
 
-```js
-window.WOOJU_CONFIG = {
-  apiBaseUrl: 'https://YOUR-RENDER-SERVICE.onrender.com'
-};
-```
+## 기존 GitHub/Render에 적용할 파일
+GitHub 저장소에서 다음 파일을 교체/추가하세요.
 
-이걸 넣어야 GitHub Pages에서 버튼을 눌렀을 때 Render 서버로 요청이 갑니다.
+- `app.js` 교체
+- `server/server.js` 교체
+- `server/package.json` 교체
+- `server/style-reference.png` **새로 추가**
 
-## 2) Render 서버 배포
-`server` 폴더를 Render에 배포하거나, 이 프로젝트를 올린 뒤 Root Directory를 `server`로 지정하세요.
+`index.html`, `styles.css`, `config.js`, assets는 그대로 사용하면 됩니다.
 
-환경변수는 아래처럼 설정하면 됩니다.
+## Render
+새 Web Service를 만들 필요 없습니다. 기존 `wooju-ai`를 그대로 사용하세요. GitHub 커밋 후 자동 배포가 켜져 있으면 기다리고, 꺼져 있으면 **Manual Deploy → Deploy latest commit**만 하면 됩니다.
 
-- `OPENAI_API_KEY` = 본인 키
-- `OPENAI_IMAGE_MODEL` = `gpt-image-1`
-- `ALLOWED_ORIGIN` = GitHub Pages 주소
-  - 예: `https://YOUR_USERNAME.github.io`
-  - 리포지토리 페이지면 `https://YOUR_USERNAME.github.io/REPO_NAME` 를 써도 되지만, 기본적으로 origin 값은 도메인까지만 들어오므로 보통 `https://YOUR_USERNAME.github.io` 권장
+기존 `OPENAI_API_KEY`, `ALLOWED_ORIGIN`은 그대로 사용합니다.
+`OPENAI_IMAGE_MODEL=gpt-image-1` 환경변수가 남아 있어도 이 v17에서는 사용하지 않습니다. 기본 편집 모델은 `gpt-image-2.5-sunburst`입니다.
+원하면 새 환경변수 `OPENAI_EDIT_MODEL=gpt-image-2.5-sunburst`를 추가할 수 있지만 없어도 동작합니다.
 
-## 3) 동작 흐름
-1. 사용자가 모스트 1 선택
-2. `AI 배경 생성` 클릭
-3. GitHub Pages의 프론트가 `config.js`의 Render 주소로 POST 요청
-4. Render 서버가 OpenAI Images API 호출
-5. 생성된 배경 이미지를 base64로 받아 프론트에 전달
-6. 카드의 **배경 레이어만 자동 교체**
+## 테스트
+Render 배포 완료 후 GitHub Pages에서 Ctrl+F5를 하고:
 
-## 로컬 테스트
-GitHub Pages 없이도 로컬에서 테스트할 수 있습니다.
+모스트1 선택 → AI 배경 생성 → 생성 완료 후 카드 배경 자동 교체
 
-```bash
-cd server
-npm install
-npm start
-```
+서버 상태 확인 주소:
+`https://wooju-ai.onrender.com/api/health`
 
-그 뒤 브라우저에서 `http://localhost:3000` 접속.
-
-## 주의
-- API 키는 절대 프론트엔드 JS에 넣지 마세요.
-- AI는 **배경 그림만 생성**하도록 프롬프트가 이미 작성되어 있습니다.
-- GitHub Pages는 정적 호스팅이라 서버 코드가 직접 돌지 않습니다. 반드시 Render 같은 별도 서버가 필요합니다.
+정상이라면 `referenceMode: official-champion+style`이 표시됩니다.

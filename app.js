@@ -40,35 +40,36 @@ function promptText(){
   const title=c.title?` — ${c.title}`:'';
   const lore=c.blurb?c.blurb.replace(/\s+/g,' ').trim():'';
   const archetypes=Array.isArray(c.tags)&&c.tags.length?c.tags.join(', '):'champion';
-  const resource=c.partype||'';
 
   return [
-    `Create ONE exceptional, premium square fantasy game illustration to be used ONLY as the background artwork of a profile card.`,
+    `Create ONE original, premium square fantasy game key-art illustration for use ONLY as a profile-card background.`,
 
-    `SUBJECT: ${c.id} (${c.name})${title}, an official League of Legends champion. Champion archetypes: ${archetypes}.${resource?` Resource/theme: ${resource}.`:''}`,
+    `SELECTED CHAMPION: ${c.id} (${c.name})${title}. Archetypes: ${archetypes}.`,
     lore?`Official champion context: ${lore}`:'',
 
-    `TOP PRIORITY — CHAMPION IDENTITY: The result must be immediately recognizable as ${c.id}. Preserve the champion's canonical visual identity: species/body type, facial impression or creature anatomy, hairstyle or head shape, signature costume language, armor/clothing motifs, accessories, silhouette, weapon or key prop, signature magical/elemental/technological power, personality, and established core color palette. Do not replace these with generic fantasy design choices.`,
+    `The server provides TWO image references. Follow their roles exactly.`,
+    `REFERENCE IMAGE 1 is the official default splash artwork for ${c.id}. This is the ONLY authority for champion identity. Preserve the selected champion's recognizable species/body type, face or creature anatomy, hairstyle/head shape, signature clothing or armor language, accessories, silhouette, weapon/prop, signature powers, personality, and core color identity. The finished artwork must be immediately recognizable as ${c.id}.`,
+    `REFERENCE IMAGE 2 is ONLY a QUALITY / RENDERING / COMPOSITION benchmark. Use its premium polish, close-up visual impact, cinematic lighting, sharp focal rendering, layered depth, dynamic perspective, foreground effects, elegant motion, and expensive game-key-art finish. DO NOT copy Reference 2's person, face, hairstyle, clothing, jewelry, yellow outfit, blue water powers, color palette, or character-specific details unless those elements genuinely belong to ${c.id}.`,
 
-    `Do NOT humanize a non-human champion. Do NOT change a monster, creature, spirit, construct, yordle, celestial being, void entity, or other non-human champion into a generic attractive human. If the champion has an essential companion, transformation, mask, familiar, or signature secondary element that is central to the champion's identity, preserve it naturally.`,
+    `Create a NEW composition rather than tracing or reproducing either reference image. Identity comes from Reference 1; presentation quality and visual ambition come from Reference 2.`,
 
-    `ART DIRECTION: luxurious, glamorous, highly polished high-end fantasy game illustration; premium splash-art-inspired presentation; semi-realistic rendering; intricate materials; elegant shape language; rich cinematic lighting; controlled bloom; strong rim light; volumetric atmosphere; deep foreground/midground/background separation; refined color grading; sophisticated particles and ability effects; dramatic but tasteful contrast; professional key-art finish. It must feel expensive and immediately impressive at first glance.`,
+    `ART DIRECTION: top-tier premium fantasy game key art; beautiful or majestic as appropriate to the champion; sophisticated semi-realistic rendering; cinematic key light and rim light; luminous highlights; crisp face/focal detail; rich material definition; atmospheric depth; foreground/midground/background separation; elegant particles and champion-specific effects; controlled bloom; refined color grading; high contrast around the focal point; visually dense and luxurious without becoming messy. The first impression must feel expensive and professionally art-directed.`,
 
-    `ENERGY AND STAGING: avoid a passive portrait. Use a confident, dynamic, story-driven pose with clear motion and a strong readable silhouette. Build visual flow with the champion's signature weapon, spell, elemental force, technology, summoned power, or characteristic effect. The effects must feel integrated with the champion rather than pasted on. Use elegant diagonals, depth, motion, foreground elements, atmospheric perspective, and cinematic framing to create high visual impact.`,
+    `STAGING: NOT a passive portrait and NOT a simple standing pose. Use a strong dynamic action pose or emotionally charged hero moment. Favor dramatic perspective, tasteful foreshortening, flowing hair/fabric/energy where appropriate, and signature powers or weapons sweeping through the foreground. The champion should feel alive, powerful, and in motion.`,
 
-    `COMPOSITION FOR THIS CARD: square 1:1 canvas. Place the main champion predominantly in the center-right region, with the face/focal point roughly around 62–75% of the canvas width. Keep approximately the left 38–42% darker, calmer, lower-contrast, and less detailed so white profile text remains readable. Keep the lower portion slightly calmer and darker than the main focal region because fixed tier, champion, and tag UI will overlay it. The left side must still feel atmospheric and premium, never empty or unfinished.`,
+    `CARD COMPOSITION: output is square 1:1. Put the main champion predominantly in the center-right, with the main face/focal point roughly at 64–76% of canvas width. Keep about the left 38–42% darker, calmer, lower-detail, and lower-contrast for white profile text. The left side must still feel atmospheric and finished, not empty. Keep the lower band slightly darker/calmer because fixed tier, champion icons, and tags will overlay it.`,
 
-    `BACKGROUND: create an environment and atmosphere that naturally belongs to ${c.id}'s fantasy and world. It should reinforce the champion's identity through architecture, weather, magical phenomena, terrain, particles, light, or motion, while remaining secondary to the main subject. Avoid bland skies, empty gradients, generic castles, generic forests, or unrelated fantasy scenery.`,
+    `ENVIRONMENT: build a setting that belongs naturally to ${c.id}'s world, faction, powers, or narrative. Use champion-specific architecture, weather, magic, technology, terrain, particles, or atmosphere where appropriate. Never default to generic castle/forest/sky filler.`,
 
-    `FIDELITY VS ORIGINALITY: strongly preserve the champion's official visual identity and recognizable design language, but create a fresh original composition. Do not reproduce or trace an existing splash artwork. The result should feel like a new premium promotional illustration featuring the same champion.`,
+    `NON-HUMAN FIDELITY: never humanize a non-human champion. Preserve yordles, monsters, void entities, spirits, constructs, creatures, celestial beings, unusual anatomy, companions, masks, forms, or transformations when they are central to the champion identity.`,
 
-    `QUALITY CONTROL: crisp focal details, coherent anatomy, clean face or creature features, believable hands/limbs where applicable, clean weapon geometry, correct number of limbs, no duplicated face, no duplicate main character, no accidental extra characters, no awkward cropping of the focal face, no muddy textures, no flat cel-shaded look, no cheap mobile-game look, no generic cosplay-photo look, no plain studio portrait, no low-energy composition, no visually empty result.`,
+    `QUALITY FAILURE PREVENTION: no generic fantasy cosplay, no plain portrait, no weak pose, no flat lighting, no muddy textures, no low-detail face, no cheap mobile-game look, no duplicated main character, no duplicate face, no malformed hands/limbs, no wrong limb count, no broken weapon geometry, no random unrelated accessories, no empty background, no visual dead zone around the main subject.`,
 
-    `PLAYER CONTEXT: main role ${d.mainRole}; tier ${d.tier}. These may influence only subtle prestige, confidence, or atmospheric intensity. They must NOT override ${c.id}'s canonical design or primary color identity.`,
+    `PLAYER CONTEXT: main role ${d.mainRole}; tier ${d.tier}. These may affect only subtle prestige/intensity. They must never override the champion's canonical identity or signature visual language.`,
 
-    `STRICT EXCLUSIONS: background artwork only. Absolutely NO text, letters, numbers, typography, champion name, logos, watermarks, League logo, rank badge, role icon, UI, HUD, card border, frame, plaque, button, tag, WOOJU branding, profile layout, or decorative interface elements anywhere in the generated image.`,
+    `STRICT OUTPUT EXCLUSIONS: artwork only. NO text, letters, numbers, logos, watermark, champion name, League logo, rank emblem, role icon, UI, HUD, card border, frame, plaque, button, tag, WOOJU branding, or interface decoration anywhere in the generated image.`,
 
-    `FINAL TARGET: a visually rich, champion-faithful, cinematic, luxurious fantasy illustration that looks worthy of a premium game key art. Strong identity, strong beauty or majesty appropriate to the champion, strong atmosphere, strong motion, refined detail, and a premium finish — never generic, bland, flat, or filler-like.`
+    `FINAL BAR: the finished image should look like a premium promotional splash/key-art illustration that a player would be happy to pay for: immediately recognizable champion identity from Reference 1, and the dramatic beauty, polish, depth, lighting, and visual impact demonstrated by Reference 2.`
   ].filter(Boolean).join('\n\n');
 }
 async function generateAI(){
@@ -76,7 +77,7 @@ async function generateAI(){
   b.disabled=true;
   b.textContent='생성 중...';
   s.className='helper';
-  s.textContent='배경 그림 생성 요청 중...';
+  s.textContent='공식 챔피언 이미지 + 프리미엄 스타일 레퍼런스로 생성 중...';
   try{
     const d=collect(), c=champ(d.most1);
     const endpoint=apiUrl('/api/generate-character');
@@ -86,6 +87,7 @@ async function generateAI(){
       body:JSON.stringify({
         prompt:promptText(),
         champion:c,
+        championId:c.id,
         mainRole:d.mainRole,
         tier:d.tier,
         format:'background-only-square'
@@ -100,7 +102,7 @@ async function generateAI(){
     if(!state.uploadedCharacter) throw new Error('이미지 데이터가 없습니다.');
     update();
     s.className='helper is-ok';
-    s.textContent='AI 배경을 카드에 적용했습니다.';
+    s.textContent='공식 챔피언 레퍼런스 기반 AI 배경을 적용했습니다.';
   }catch(err){
     console.error('AI background generation failed:', err);
     s.className='helper is-warn';
