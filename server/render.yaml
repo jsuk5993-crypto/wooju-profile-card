@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: wooju-ai
+    env: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_IMAGE_MODEL
+        value: gpt-image-1
+      - key: ALLOWED_ORIGIN
+        sync: false

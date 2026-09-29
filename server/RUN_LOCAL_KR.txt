@@ -1,0 +1,8 @@
+1) server 폴더로 이동
+2) .env.example 파일을 복사해서 .env 로 이름 변경
+3) .env 안에 OPENAI_API_KEY 입력
+4) 터미널에서 아래 실행
+   npm install
+   npm start
+5) 브라우저에서 http://localhost:3000 접속
+6) 카드 정보 입력 후 [AI 배경 생성] 버튼 클릭
