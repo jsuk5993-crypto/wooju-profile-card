@@ -6,14 +6,15 @@ const roleOptions=[
   {value:'SUPPORT',label:'SUPPORT',asset:'assets/roles/display/sup.png'}
 ];
 const tierOptions=[
+  {value:'UNRANKED',label:'UNRANKED',asset:null},
   {value:'IRON',asset:'assets/tiers/iron.png'},{value:'BRONZE',asset:'assets/tiers/bronze.png'},{value:'SILVER',asset:'assets/tiers/silver.png'},
   {value:'GOLD',asset:'assets/tiers/gold.png'},{value:'PLATINUM',asset:'assets/tiers/platinum.png'},{value:'EMERALD',asset:'assets/tiers/emerald.png'},
   {value:'DIAMOND',asset:'assets/tiers/diamond.png'},{value:'MASTER',asset:'assets/tiers/master.png'},{value:'GRANDMASTER',asset:'assets/tiers/grandmaster.png'},
   {value:'CHALLENGER',asset:'assets/tiers/challenger.png'}
 ];
-const tierTheme={IRON:['#7b6d73','#b6a8ae','#3b3337'],BRONZE:['#a66a43','#d29a73','#5c3424'],SILVER:['#9eb2c6','#dce8f1','#4a5b6c'],GOLD:['#d1a840','#ffe08a','#76520e'],PLATINUM:['#43aebe','#a6edf2','#1f5f66'],EMERALD:['#2fc484','#9cf3c8','#155f42'],DIAMOND:['#649cff','#c0d7ff','#2f4f98'],MASTER:['#a855f7','#dec1ff','#4c1d95'],GRANDMASTER:['#df5267','#ffb3bf','#7d1e2d'],CHALLENGER:['#6ecbf8','#d8f4ff','#2b6d8e']};
+const tierTheme={UNRANKED:['#707887','#d6dae2','#2e3440'],IRON:['#7b6d73','#b6a8ae','#3b3337'],BRONZE:['#a66a43','#d29a73','#5c3424'],SILVER:['#9eb2c6','#dce8f1','#4a5b6c'],GOLD:['#d1a840','#ffe08a','#76520e'],PLATINUM:['#43aebe','#a6edf2','#1f5f66'],EMERALD:['#2fc484','#9cf3c8','#155f42'],DIAMOND:['#649cff','#c0d7ff','#2f4f98'],MASTER:['#a855f7','#dec1ff','#4c1d95'],GRANDMASTER:['#df5267','#ffb3bf','#7d1e2d'],CHALLENGER:['#6ecbf8','#d8f4ff','#2b6d8e']};
 const fallback={version:'14.24.1',list:[{id:'Nilah',name:'닐라',title:'해방된 기쁨',tags:['Fighter','Assassin']},{id:'Caitlyn',name:'케이틀린',title:'필트오버의 보안관',tags:['Marksman']},{id:'Velkoz',name:'벨코즈',title:'공허의 눈',tags:['Mage']},{id:'Samira',name:'사미라',title:'사막의 장미',tags:['Marksman']},{id:'Kaisa',name:'카이사',title:'공허의 딸',tags:['Marksman']},{id:'Jinx',name:'징크스',title:'난폭한 말괄량이',tags:['Marksman']},{id:'Ahri',name:'아리',title:'구미호',tags:['Mage','Assassin']}]};
-const $=id=>document.getElementById(id); const els={nickname:$('nickname'),serverTag:$('serverTag'),birth:$('birth'),gender:$('gender'),introText:$('introText'),introCount:$('introCount'),mainRole:$('mainRole'),subRole:$('subRole'),tier:$('tier'),most1:$('most1'),most2:$('most2'),most3:$('most3'),tagInput:$('tagInput'),tagInputWrap:$('tagInputWrap'),clearTags:$('clearTags'),characterUpload:$('characterUpload'),clearCharacterBtn:$('clearCharacterBtn'),aiGenerateBtn:$('aiGenerateBtn'),aiStatus:$('aiStatus'),downloadBtn:$('downloadBtn'),resetBtn:$('resetBtn'),card:$('profileCard'),viewport:$('cardViewport'),characterImage:$('characterImage'),profileIcon:$('profileIcon'),cardNickname:$('cardNickname'),cardTag:$('cardTag'),cardBirth:$('cardBirth'),cardGender:$('cardGender'),cardIntro:$('cardIntro'),mainRoleIcon:$('mainRoleIcon'),subRoleIcon:$('subRoleIcon'),mainRoleText:$('mainRoleText'),subRoleText:$('subRoleText'),tierIcon:$('tierIcon'),tierText:$('tierText'),most1Icon:$('most1Icon'),most2Icon:$('most2Icon'),most3Icon:$('most3Icon'),most1Name:$('most1Name'),most2Name:$('most2Name'),most3Name:$('most3Name'),cardTags:$('cardTags')};
+const $=id=>document.getElementById(id); const els={nickname:$('nickname'),serverTag:$('serverTag'),birth:$('birth'),gender:$('gender'),introText:$('introText'),introCount:$('introCount'),mainRole:$('mainRole'),subRole:$('subRole'),tier:$('tier'),rankType:$('rankType'),most1:$('most1'),most2:$('most2'),most3:$('most3'),tagInput:$('tagInput'),tagInputWrap:$('tagInputWrap'),clearTags:$('clearTags'),characterUpload:$('characterUpload'),clearCharacterBtn:$('clearCharacterBtn'),aiGenerateBtn:$('aiGenerateBtn'),aiStatus:$('aiStatus'),downloadBtn:$('downloadBtn'),resetBtn:$('resetBtn'),card:$('profileCard'),viewport:$('cardViewport'),characterImage:$('characterImage'),profileIcon:$('profileIcon'),cardNickname:$('cardNickname'),cardTag:$('cardTag'),cardBirth:$('cardBirth'),cardGender:$('cardGender'),cardIntro:$('cardIntro'),mainRoleIcon:$('mainRoleIcon'),subRoleIcon:$('subRoleIcon'),mainRoleText:$('mainRoleText'),subRoleText:$('subRoleText'),tierIcon:$('tierIcon'),tierText:$('tierText'),tierQueueText:$('tierQueueText'),most1Icon:$('most1Icon'),most2Icon:$('most2Icon'),most3Icon:$('most3Icon'),most1Name:$('most1Name'),most2Name:$('most2Name'),most3Name:$('most3Name'),cardTags:$('cardTags')};
 
 const apiBase = (window.WOOJU_CONFIG?.apiBaseUrl || 'https://wooju-ai.onrender.com').replace(/\/$/, '');
 function apiUrl(path){
@@ -85,13 +86,67 @@ function fill(select,items,selected){select.innerHTML='';items.forEach(i=>{const
 function champ(id){return state.champions.find(c=>c.id===id)||fallback.list.find(c=>c.id===id)||fallback.list[0]}
 function champIcon(id){return `https://ddragon.leagueoflegends.com/cdn/${state.championVersion}/img/champion/${id}.png`}
 function splash(id){return `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${id}_0.jpg`}
-function roleAsset(v){return roleOptions.find(r=>r.value===v)?.asset||roleOptions[0].asset} function tierAsset(v){return tierOptions.find(t=>t.value===v)?.asset||tierOptions[0].asset}
-function collect(){return{nickname:els.nickname.value.trim()||'이 궤',serverTag:els.serverTag.value.trim()||'#에이엑',birth:els.birth.value.trim()||'2000',gender:els.gender.value,introText:els.introText.value.trim()||'같이 재밌게 게임해요',mainRole:els.mainRole.value,subRole:els.subRole.value,tier:els.tier.value,most1:els.most1.value,most2:els.most2.value,most3:els.most3.value,tags:state.tags,uploadedCharacter:state.uploadedCharacter}}
+function roleAsset(v){return roleOptions.find(r=>r.value===v)?.asset||roleOptions[0].asset} function tierAsset(v){return tierOptions.find(t=>t.value===v)?.asset||''}
+function collect(){return{nickname:els.nickname.value.trim()||'이 궤',serverTag:els.serverTag.value.trim()||'#에이엑',birth:els.birth.value.trim()||'2000',gender:els.gender.value,introText:els.introText.value.trim()||'같이 재밌게 게임해요',mainRole:els.mainRole.value,subRole:els.subRole.value,tier:els.tier.value,rankType:els.rankType.value,most1:els.most1.value,most2:els.most2.value,most3:els.most3.value,tags:state.tags,uploadedCharacter:state.uploadedCharacter}}
 function save(){try{const d=collect();d.uploadedCharacter=null;localStorage.setItem('wooju-card-v7',JSON.stringify(d))}catch(e){console.warn('Profile save skipped:',e)}} function load(){try{return JSON.parse(localStorage.getItem('wooju-card-v7'))}catch{return null}}
-function apply(d){if(!d)return;['nickname','serverTag','birth','introText'].forEach(k=>{if(d[k])els[k].value=d[k]});if(d.gender)els.gender.value=d.gender;if(d.mainRole)els.mainRole.value=d.mainRole;if(d.subRole)els.subRole.value=d.subRole;if(d.tier)els.tier.value=d.tier;if(d.most1)els.most1.value=d.most1;if(d.most2)els.most2.value=d.most2;if(d.most3)els.most3.value=d.most3;if(Array.isArray(d.tags))state.tags=d.tags;if(d.uploadedCharacter)state.uploadedCharacter=d.uploadedCharacter}
+function apply(d){if(!d)return;['nickname','serverTag','birth','introText'].forEach(k=>{if(d[k])els[k].value=d[k]});if(d.gender)els.gender.value=d.gender;if(d.mainRole)els.mainRole.value=d.mainRole;if(d.subRole)els.subRole.value=d.subRole;if(d.tier)els.tier.value=d.tier;if(d.rankType)els.rankType.value=d.rankType;if(d.most1)els.most1.value=d.most1;if(d.most2)els.most2.value=d.most2;if(d.most3)els.most3.value=d.most3;if(Array.isArray(d.tags))state.tags=d.tags;if(d.uploadedCharacter)state.uploadedCharacter=d.uploadedCharacter}
 function renderTags(){els.tagInputWrap.querySelectorAll('.tag-pill').forEach(e=>e.remove());state.tags.forEach((t,i)=>{const s=document.createElement('span');s.className='tag-pill';s.innerHTML=`#${t}<button type="button">×</button>`;s.querySelector('button').onclick=()=>{state.tags.splice(i,1);renderTags();update()};els.tagInputWrap.insertBefore(s,els.tagInput)});els.cardTags.innerHTML='';state.tags.slice(0,5).forEach(t=>{const s=document.createElement('span');s.textContent=`#${t}`;els.cardTags.appendChild(s)})}
 function addTag(v){const t=v.replace(/^#/,'').trim();if(!t||state.tags.includes(t)||state.tags.length>=8)return;state.tags.push(t);renderTags();update()}
-function update(){const d=collect();els.cardNickname.textContent=d.nickname;els.cardTag.textContent=d.serverTag;els.cardBirth.textContent=d.birth;els.cardGender.textContent=d.gender;els.cardIntro.textContent=d.introText;els.introCount.textContent=d.introText.length;els.mainRoleText.textContent=d.mainRole;els.subRoleText.textContent=d.subRole;els.mainRoleIcon.src=roleAsset(d.mainRole);els.subRoleIcon.src=roleAsset(d.subRole);els.tierText.textContent=d.tier;els.tierIcon.src=tierAsset(d.tier);const th=tierTheme[d.tier]||tierTheme.MASTER;document.documentElement.style.setProperty('--tier',th[0]);document.documentElement.style.setProperty('--tier-light',th[1]);document.documentElement.style.setProperty('--tier-dark',th[2]);document.documentElement.style.setProperty('--tier-glow',`${th[0]}70`);const c1=champ(d.most1),c2=champ(d.most2),c3=champ(d.most3);els.profileIcon.src=champIcon(c1.id);els.most1Icon.src=champIcon(c1.id);els.most2Icon.src=champIcon(c2.id);els.most3Icon.src=champIcon(c3.id);els.most1Name.textContent=c1.name;els.most2Name.textContent=c2.name;els.most3Name.textContent=c3.name;els.characterImage.src=state.uploadedCharacter||splash(c1.id);renderTags();save()}
+function fitIdentityLine(){
+  // Nickname + card tag are always kept on one line.
+  // Start large, then shrink only as much as needed for long names/tags.
+  const box=els.cardNickname.closest('.identity');
+  if(!box) return;
+  const maxWidth=box.clientWidth || 880;
+  const gap=18;
+  let nickSize=88;
+  let tagSize=30;
+  const minNickSize=40;
+  const minTagSize=18;
+
+  const applySize=()=>{
+    els.cardNickname.style.fontSize=`${nickSize}px`;
+    els.cardTag.style.fontSize=`${tagSize}px`;
+  };
+
+  applySize();
+  for(let i=0;i<30;i++){
+    const total=els.cardNickname.scrollWidth + els.cardTag.scrollWidth + gap;
+    if(total<=maxWidth) break;
+    if(nickSize<=minNickSize && tagSize<=minTagSize) break;
+    nickSize=Math.max(minNickSize,nickSize-2);
+    tagSize=Math.max(minTagSize,Math.round(nickSize*0.34));
+    applySize();
+  }
+}
+function fitTierText(){
+  const el=els.tierText;
+  const wrap=el?.parentElement;
+  if(!el||!wrap) return;
+  let size=50;
+  const minSize=30;
+  el.style.fontSize=`${size}px`;
+  el.style.whiteSpace='nowrap';
+  // The text area next to the emblem is intentionally narrow; shrink only long tier names.
+  const maxWidth=Math.max(120,wrap.clientWidth||198);
+  for(let i=0;i<24 && el.scrollWidth>maxWidth && size>minSize;i++){
+    size-=1;
+    el.style.fontSize=`${size}px`;
+  }
+}
+function update(){const d=collect();els.cardNickname.textContent=d.nickname;els.cardTag.textContent=d.serverTag;fitIdentityLine();els.cardBirth.textContent=d.birth;els.cardGender.textContent=d.gender;els.cardIntro.textContent=d.introText;els.introCount.textContent=d.introText.length;els.mainRoleText.textContent=d.mainRole;els.subRoleText.textContent=d.subRole;els.mainRoleIcon.src=roleAsset(d.mainRole);els.subRoleIcon.src=roleAsset(d.subRole);els.tierText.textContent=d.tier;els.tierQueueText.textContent=d.rankType==='FLEX'?'(자유랭크)':'(솔로랭크)';
+const isUnranked=d.tier==='UNRANKED';
+const tierBlock=els.tierIcon.closest('.tier-block');
+tierBlock?.classList.toggle('is-unranked',isUnranked);
+if(isUnranked){
+  els.tierIcon.removeAttribute('src');
+  els.tierIcon.alt='';
+}else{
+  els.tierIcon.src=tierAsset(d.tier);
+  els.tierIcon.alt=`${d.tier} 티어`;
+}
+requestAnimationFrame(fitTierText);
+const th=tierTheme[d.tier]||tierTheme.MASTER;document.documentElement.style.setProperty('--tier',th[0]);document.documentElement.style.setProperty('--tier-light',th[1]);document.documentElement.style.setProperty('--tier-dark',th[2]);document.documentElement.style.setProperty('--tier-glow',`${th[0]}70`);const c1=champ(d.most1),c2=champ(d.most2),c3=champ(d.most3);els.profileIcon.src=champIcon(c1.id);els.most1Icon.src=champIcon(c1.id);els.most2Icon.src=champIcon(c2.id);els.most3Icon.src=champIcon(c3.id);els.most1Name.textContent=c1.name;els.most2Name.textContent=c2.name;els.most3Name.textContent=c3.name;els.characterImage.src=state.uploadedCharacter||splash(c1.id);renderTags();save()}
 function scaleCard(){const w=els.viewport.clientWidth;const scale=w/1080;els.card.style.transform=`scale(${scale})`;els.viewport.style.height=`${1080*scale}px`}
 function promptText(){
   const d=collect();
@@ -124,7 +179,7 @@ function promptText(){
 
     `QUALITY FAILURE PREVENTION: no generic fantasy cosplay, no plain portrait, no weak pose, no flat lighting, no muddy textures, no low-detail face, no cheap mobile-game look, no duplicated main character, no duplicate face, no malformed hands/limbs, no wrong limb count, no broken weapon geometry, no random unrelated accessories, no empty background, no visual dead zone around the main subject.`,
 
-    `PLAYER CONTEXT: main role ${d.mainRole}; tier ${d.tier}. These may affect only subtle prestige/intensity. They must never override the champion's canonical identity or signature visual language.`,
+    `PLAYER CONTEXT: main role ${d.mainRole}; tier ${d.tier}; ranked queue ${d.rankType==='FLEX'?'Flex Rank':'Solo Rank'}. These may affect only subtle prestige/intensity. They must never override the champion's canonical identity or signature visual language.`,
 
     `STRICT OUTPUT EXCLUSIONS: artwork only. NO text, letters, numbers, logos, watermark, champion name, League logo, rank emblem, role icon, UI, HUD, card border, frame, plaque, button, tag, WOOJU branding, or interface decoration anywhere in the generated image.`,
 
@@ -184,6 +239,37 @@ function waitForCardImages(root){
     });
   }));
 }
+function isIOSDevice(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+}
+function dataUrlToFile(dataUrl,filename){
+  const parts=dataUrl.split(',');
+  const mime=(parts[0].match(/data:([^;]+)/)||[])[1]||'image/png';
+  const bin=atob(parts[1]);
+  const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  return new File([bytes],filename,{type:mime});
+}
+function showIOSSaveOverlay(dataUrl){
+  document.getElementById('iosSaveOverlay')?.remove();
+  const overlay=document.createElement('div');
+  overlay.id='iosSaveOverlay';
+  Object.assign(overlay.style,{position:'fixed',inset:'0',zIndex:'999999',background:'rgba(1,7,18,.96)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'20px'});
+  const msg=document.createElement('div');
+  msg.innerHTML='<strong style="font-size:18px">이미지를 길게 눌러 사진에 저장</strong><br><span style="font-size:13px;opacity:.75">카카오톡 안에서 저장 메뉴가 안 뜨면 Safari에서 열어주세요.</span>';
+  Object.assign(msg.style,{color:'#fff',textAlign:'center',marginBottom:'14px',lineHeight:'1.55'});
+  const img=document.createElement('img');
+  img.src=dataUrl;
+  img.alt='저장할 WOOJU 프로필 카드';
+  Object.assign(img.style,{display:'block',width:'min(88vw,620px)',maxHeight:'74vh',objectFit:'contain',borderRadius:'12px',boxShadow:'0 18px 60px rgba(0,0,0,.55)'});
+  const close=document.createElement('button');
+  close.type='button';close.textContent='닫기';
+  Object.assign(close.style,{marginTop:'16px',padding:'11px 24px',border:'0',borderRadius:'12px',background:'#fff',color:'#07101e',fontWeight:'800',fontSize:'15px'});
+  close.onclick=()=>overlay.remove();
+  overlay.append(msg,img,close);
+  document.body.appendChild(overlay);
+}
 
 async function exportCardPNG(){
   const b=els.downloadBtn;
@@ -193,16 +279,13 @@ async function exportCardPNG(){
 
   try{
     if(document.fonts?.ready) await document.fonts.ready;
+    fitTierText();
     await waitForCardImages(els.card);
 
     if(!window.htmlToImage?.toPng){
       throw new Error('PNG 저장 라이브러리를 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해주세요.');
     }
 
-    // html2canvas는 이 카드의 clip-path / 복잡한 프레임을 정확히 그리지 못해
-    // 보라색 오버레이와 네모난 코너가 생겼다.
-    // html-to-image는 브라우저의 SVG foreignObject 렌더링을 사용해서
-    // 화면에서 보이는 CSS를 훨씬 그대로 보존한다.
     const dataUrl=await window.htmlToImage.toPng(els.card,{
       width:1080,
       height:1080,
@@ -224,9 +307,30 @@ async function exportCardPNG(){
       }
     });
 
+    const filename=`${(els.nickname.value||'wooju').replace(/\s+/g,'_')}_WOOJU.png`;
+
+    // iOS Safari / in-app browsers often ignore <a download>. Prefer native share with a real File.
+    if(isIOSDevice()){
+      let shared=false;
+      try{
+        const file=dataUrlToFile(dataUrl,filename);
+        const shareData={files:[file],title:'WOOJU 프로필 카드'};
+        if(navigator.share && (!navigator.canShare || navigator.canShare(shareData))){
+          await navigator.share(shareData);
+          shared=true;
+        }
+      }catch(err){
+        // Cancel is not an error. If share is unavailable/blocked, show a saveable image overlay.
+        if(err?.name==='AbortError') return;
+        console.warn('iOS share fallback:',err);
+      }
+      if(!shared) showIOSSaveOverlay(dataUrl);
+      return;
+    }
+
     const a=document.createElement('a');
     a.href=dataUrl;
-    a.download=`${(els.nickname.value||'wooju').replace(/\s+/g,'_')}_WOOJU.png`;
+    a.download=filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -236,13 +340,12 @@ async function exportCardPNG(){
   }finally{
     b.disabled=false;
     b.textContent=oldText;
-    // 실제 미리보기 DOM은 전혀 수정하지 않는다.
     scaleCard();
   }
 }
 
 function setup(){
-  [els.nickname,els.serverTag,els.birth,els.gender,els.introText,els.mainRole,els.subRole,els.tier,els.most1,els.most2,els.most3].forEach(e=>{e.addEventListener('input',update);e.addEventListener('change',update)});
+  [els.nickname,els.serverTag,els.birth,els.gender,els.introText,els.mainRole,els.subRole,els.tier,els.rankType,els.most1,els.most2,els.most3].forEach(e=>{e.addEventListener('input',update);e.addEventListener('change',update)});
   els.tagInput.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===','){e.preventDefault();addTag(els.tagInput.value);els.tagInput.value=''}});
   document.querySelectorAll('.quick-tags button').forEach(b=>b.onclick=()=>addTag(b.dataset.tag));
   els.clearTags.onclick=()=>{state.tags=[];renderTags();update()};
@@ -259,4 +362,4 @@ function setup(){
   window.addEventListener('resize',scaleCard);
 }
 async function loadChamps(){try{const vr=await fetch('https://ddragon.leagueoflegends.com/api/versions.json'),vs=await vr.json();state.championVersion=vs[0]||fallback.version;const cr=await fetch(`https://ddragon.leagueoflegends.com/cdn/${state.championVersion}/data/ko_KR/champion.json`),p=await cr.json();state.champions=Object.values(p.data).map(c=>({id:c.id,name:c.name,title:c.title||'',blurb:c.blurb||'',tags:c.tags||[],partype:c.partype||''})).sort((a,b)=>a.name.localeCompare(b.name,'ko'))}catch{state.champions=fallback.list;state.championVersion=fallback.version}const items=state.champions.map(c=>({value:c.id,label:c.name,id:c.id,name:c.name}));fill(els.most1,items,'Nilah');fill(els.most2,items,'Caitlyn');fill(els.most3,items,'Velkoz')}
-async function init(){fill(els.mainRole,roleOptions,'ADC');fill(els.subRole,roleOptions,'MID');fill(els.tier,tierOptions,'MASTER');await loadChamps();apply(load());state.uploadedCharacter=await loadBackgroundImage();setup();update();scaleCard()} init();
+async function init(){fill(els.mainRole,roleOptions,'ADC');fill(els.subRole,roleOptions,'MID');fill(els.tier,tierOptions,'MASTER');await loadChamps();apply(load());state.uploadedCharacter=await loadBackgroundImage();setup();update();scaleCard();if(document.fonts?.ready){document.fonts.ready.then(()=>{fitIdentityLine();fitTierText();scaleCard()})}} init();

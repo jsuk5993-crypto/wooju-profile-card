@@ -84,3 +84,92 @@
 .card-tags span{max-width:162px;border-radius:13px;font-size:22px;padding:0 11px;}
 .wooju-plaque{bottom:4px;width:258px;height:55px;border-width:1.5px;z-index:14;}
 .wooju-plaque span{font-size:29px;}
+
+
+/* ===== v21 nickname + tag single-line identity polish ===== */
+.identity{
+  width:880px;
+  display:grid;
+  grid-template-columns:max-content max-content;
+  grid-template-rows:auto auto auto;
+  column-gap:18px;
+  align-items:end;
+}
+.identity h3{
+  grid-column:1;
+  grid-row:1;
+  margin:0;
+  white-space:nowrap;
+  max-width:none;
+  overflow:visible;
+  font-family:"Jua","Noto Sans KR",sans-serif;
+  font-size:88px;
+  line-height:.96;
+  letter-spacing:-.025em;
+  font-weight:400;
+  text-shadow:0 4px 22px #000;
+}
+.card-tag{
+  grid-column:2;
+  grid-row:1;
+  align-self:end;
+  margin:0 0 7px 0;
+  white-space:nowrap;
+  font-family:"Jua","Noto Sans KR",sans-serif;
+  font-size:30px;
+  line-height:1;
+  letter-spacing:-.02em;
+  font-weight:400;
+  color:var(--tier-light);
+  text-shadow:0 3px 14px #000;
+}
+.identity .meta{
+  grid-column:1 / -1;
+  grid-row:2;
+  margin:22px 0 0;
+  font-family:"Jua","Noto Sans KR",sans-serif;
+  font-size:35px;
+  line-height:1.15;
+  font-weight:400;
+  letter-spacing:-.02em;
+}
+.identity .card-intro{
+  grid-column:1 / -1;
+  grid-row:3;
+  margin:22px 0 0;
+  font-family:"Jua","Noto Sans KR",sans-serif;
+  font-size:37px;
+  line-height:1.30;
+  font-weight:400;
+  letter-spacing:-.025em;
+}
+
+
+/* ===== v22 UNRANKED tier ===== */
+.tier-block.is-unranked{
+  left:112px;
+  top:742px;
+  width:330px;
+  gap:0;
+}
+.tier-block.is-unranked img{
+  display:none !important;
+}
+.tier-block.is-unranked strong{
+  font-size:48px;
+  letter-spacing:.035em;
+}
+.tier-block.is-unranked span{
+  display:none;
+}
+
+
+/* ===== v23: rank queue + long tier names ===== */
+.rank-type-row{margin-top:-1px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+.rank-type-row .field{grid-column:2;}
+.tier-block>div{flex:1;min-width:0;}
+.tier-block strong{white-space:nowrap;max-width:100%;}
+.tier-block span{white-space:nowrap;}
+/* UNRANKED still shows which queue the user selected. */
+.tier-block.is-unranked span{display:block;font-size:22px;margin-top:5px;}
+@media(max-width:680px){.rank-type-row{grid-template-columns:1fr}.rank-type-row .field{grid-column:1}}

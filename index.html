@@ -6,7 +6,7 @@
   <title>WOOJU 프로필 카드</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -42,6 +42,9 @@
           <label class="field"><span>주 포지션</span><select id="mainRole"></select></label>
           <label class="field"><span>부 포지션</span><select id="subRole"></select></label>
           <label class="field"><span>티어</span><select id="tier"></select></label>
+        </div>
+        <div class="form-grid two rank-type-row">
+          <label class="field"><span>랭크 종류</span><select id="rankType"><option value="SOLO">솔로랭크</option><option value="FLEX">자유랭크</option></select></label>
         </div>
 
         <div class="form-grid three">
@@ -105,7 +108,7 @@
 
               <div class="section-line"></div>
 
-              <section class="tier-block"><img id="tierIcon" alt="티어"><div><small>티어</small><strong id="tierText">MASTER</strong><span>(솔로랭크)</span></div></section>
+              <section class="tier-block"><img id="tierIcon" alt="티어"><div><small>티어</small><strong id="tierText">MASTER</strong><span id="tierQueueText">(솔로랭크)</span></div></section>
 
               <section class="most-block">
                 <p>모스트 챔피언</p>
